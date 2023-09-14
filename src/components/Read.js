@@ -2,37 +2,45 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-function Read() {
+const Read = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('https://sweede.app/DeliveryBoy/Get-Employee/')
-      .then((response) => {
-        setEmployeeData(response.data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+    getData();
   }, []);
 
+  function getData() {
+    axios.get('https://sweede.app/DeliveryBoy/Get-Employee/')
+  .then((response) => {
+    // Handle successful response
+    setEmployeeData(response.data);
+  })
+  .catch((error) => {
+    if (error.response) {
+      console.error('Server Error:', error.response.data);
+    } else if (error.request) {
+      console.error('No Response from Server');
+    } else {
+      console.error('Error:', error.message);
+    }
+  });
+  }
   const handleEdit = (employee) => {
     localStorage.setItem('editEmployeeData', JSON.stringify(employee));
     navigate(`/update/${employee.id}`);
   };
+  const handleView = (employee) => {
+    localStorage.setItem('editEmployeeData', JSON.stringify(employee));
+    navigate(`/view/${employee.id}`);
+  };
 
   const handleDelete = (id) => {
     axios.delete(`https://sweede.app/DeliveryBoy/delete-Employee/${id}`)
-      .then((response) => {
-        if (response.status === 204) {
-          setEmployeeData((prevData) => prevData.filter((employee) => employee.id !== id));
-        }
-        console.log("feleted");
-      })
-      .catch((error) => {
-        console.error('Error:', error);
+      .then(() => {
+        getData(); 
       });
   };
 
@@ -40,8 +48,8 @@ function Read() {
     <div className='container mt-4'>
       <h3>Employee List</h3>
       <div className="mt-5">
-        <div style={{ border: "1px solid #000", borderRadius: "20px", textAlign: 'center' }}  className="table-responsive">
-           <table className="table table-bordered rounded">
+      <div className="table-responsive" style={{ border: "1px solid #000", borderRadius: "20px", textAlign: 'center', minHeight: '250px' }}>
+          <table className="table table-bordered rounded">
             <thead>
               <tr>
                 <th>Name</th>
@@ -51,7 +59,7 @@ function Read() {
                 <th>Description</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className='h-40'>
               {employeeData.map((employee) => (
                 <tr key={employee.id}>
                   <td>{employee.FirstName} {employee.LastName}</td>
@@ -66,12 +74,12 @@ function Read() {
                         id={`dropdownMenuButton${employee.id}`}
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
-                        style={{ border: "none", backgroundColor: "transparent", color: "black" }} 
+                        style={{ border: "none", backgroundColor: "transparent", color: "black" }}
                       >
-                        {/* <i className="bi bi-three-dots"></i> */}
+                        <i className="bi bi-three-dots"></i>
                       </button>
                       <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${employee.id}`}>
-                        <li><a className="dropdown-item" href="#"><FontAwesomeIcon icon={faEye} /> View</a></li>
+                      <li><button className="dropdown-item" onClick={() => handleView(employee)}><FontAwesomeIcon icon={faEye} /> View</button></li>
                         <li><button className="dropdown-item" onClick={() => handleEdit(employee)}><FontAwesomeIcon icon={faEdit} /> Edit</button></li>
                         <li><button className="dropdown-item" onClick={() => handleDelete(employee.id)}><FontAwesomeIcon icon={faTrash} /> Delete</button></li>
                       </ul>

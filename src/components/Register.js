@@ -76,15 +76,21 @@ export default function Register() {
         'https://sweede.app/DeliveryBoy/Add-Employee/',
         dataToSend
       );
-
       if (response.status === 201) {
         navigate('/read')
       } else {
         console.error('API Response:', response.data);
       }
     } catch (error) {
-      console.error('Error:', error);
+      if (error.response) {
+        console.error('Server Error:', error.response.data);
+      } else if (error.request) {
+        console.error('No Response from Server');
+      } else {
+        console.error('Error:', error.message);
+      }
     }
+    
     
   };
 
